@@ -79,12 +79,12 @@ def index():
     return flask.render_template("index.html")
 
 
-@app.route("/")
+@app.route("/login")
 def login():
     return flask.render_template("login.html")
 
 
-@app.route("/")
+@app.route("/signup")
 def signup():
     return flask.render_template("signup.html")
 
