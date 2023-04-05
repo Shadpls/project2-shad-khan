@@ -76,16 +76,30 @@ with app.app_context():
 
 @app.route("/")
 def index():
-    movie_data = get_movie_data_from_TMDB()
-    wiki_link = get_wiki_data(movie_data["title"])
-    return flask.render_template(
-        "index.html",
-        title=movie_data["title"],
-        genres=movie_data["genres"],
-        tagline=movie_data["tagline"],
-        image=movie_data["image"],
-        wiki_link=wiki_link,
-    )
+    return flask.render_template("index.html")
+
+
+@app.route("/")
+def login():
+    return flask.render_template("login.html")
+
+
+@app.route("/")
+def signup():
+    return flask.render_template("signup.html")
+
+
+# def index():
+#     movie_data = get_movie_data_from_TMDB()
+#     wiki_link = get_wiki_data(movie_data["title"])
+#     return flask.render_template(
+#         "index.html",
+#         title=movie_data["title"],
+#         genres=movie_data["genres"],
+#         tagline=movie_data["tagline"],
+#         image=movie_data["image"],
+#         wiki_link=wiki_link,
+#     )
 
 
 # def hello():
