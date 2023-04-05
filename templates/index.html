@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
     <head>
-        <link rel="stylesheet" href="static/style.css">
+        <title>Login Page</title>
     </head>
     <body>
-        <div>
-            <h1 id = "title">{{title}}</h1>
-            <h2 id = "tagline">{{tagline}}</h2>
-            <h2 id = "genres">Genres: {{genres}}</h2>
-            <div><img src="{{image}}"></div>
-            
-            <a href="{{wiki_link}}">Wikipedia</a>
-        </div>
+        <h1>Enter your username</h1>
+        <form method="POST" action="/movie">
+            <input type="text" name="username"/>
+            <input type="submit" value="Username"/>
+        </form>
     </body>
 </html>
