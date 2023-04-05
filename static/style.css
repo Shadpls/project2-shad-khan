@@ -1,0 +1,21 @@
+body{
+    background-color: rgb(176, 151, 151);
+  }
+  #title{
+    color: aqua;
+    text-align: center;
+  }
+  
+  #tagline{
+    color:rgb(240, 159, 60);
+    text-align: center;
+  }
+  
+  #genres{
+    color: rgb(59, 231, 108);
+    text-align: center;
+  }
+  div{
+    text-align: center;
+  }
+  

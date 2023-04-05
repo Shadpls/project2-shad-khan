@@ -2,4 +2,5 @@ venv
 fly.toml
 .vscode
 __pycache__
-cold-fire.txt
+polished-rain.txt
+.env
