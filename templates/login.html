@@ -8,9 +8,11 @@
 </head>
 <body>
     <h1>Login Page</h1>
-    <form method="POST" action="/movie">
-        <input type="text" name="username"/>
-        <input type="submit" value="Username"/>
+    <form method="POST" action="">
+        {{form.hidden_tag()}}
+        {{form.username}}
+        {{form.password}}
+        {{form.submit}}
     </form>
     <a href="{{url_for('signup')}}">Don't Have an Accoun Sign Up Here</a>
 </body>
