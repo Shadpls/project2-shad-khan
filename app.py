@@ -230,4 +230,4 @@ def get_wiki_data(title):
 with app.app_context():
     db.create_all()
 
-app.run(debug=True)
+# app.run()
