@@ -12,7 +12,24 @@
             
             <a href="{{wiki_link}}">Wikipedia</a>
             <br>
+            <form method="POST" action="">
+                {{form.hidden_tag()}}
+                <h3>Rating (Out of 5) </h3>
+                {{form.rating}}
+                <br>
+                {{form.comment(cols="50", rows="5")}}
+                <br>
+                {{form.submit}}
+            </form>
             <a href="{{url_for('logout')}}">Press here to Logout</a>
+            <br>
+            <h2>See What Other People Said!</h2>
+            {% for rating in ratings %}
+            <h3>User: {{rating.user}}</h3>
+            <h3>Rating: {{rating.rating}}</h3>
+            <h3>{{rating.comment}}</h3>
+            <br>
+            {% endfor %}
         </div>
     </body>
 </html>

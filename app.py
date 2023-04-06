@@ -1,6 +1,6 @@
 from os import getenv
 from dotenv import load_dotenv, find_dotenv
-import flask
+from flask import Flask, redirect, url_for, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 import json
 import random
@@ -13,14 +13,15 @@ from flask_login import (
     logout_user,
     current_user,
 )
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, IntegerField
+from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
+from wtforms.widgets import TextArea
 from flask_wtf import FlaskForm
 from flask_bcrypt import Bcrypt
 
 load_dotenv(find_dotenv())
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URL")
 app.config["SECRET_KEY"] = getenv("COOKIE_KEY")
 db = SQLAlchemy(app)
@@ -43,8 +44,28 @@ class Person(db.Model, UserMixin):
     password = db.Column(db.LargeBinary(60), nullable=False)
 
 
+class RatingInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(80), nullable=False)
+    movieid = db.Column(db.Integer, nullable=True)
+    rating = db.Column(db.Integer, nullable=True)
+    comment = db.Column(db.String(200), nullable=True)
+
+
 with app.app_context():
     db.create_all()
+
+
+class RatingForm(FlaskForm):
+    rating = IntegerField(
+        validators=[NumberRange(min=1, max=5, message="must be 1 to 5")],
+    )
+    comment = StringField(
+        widget=TextArea(),
+        validators=[Length(0, 200)],
+        render_kw={"placeholder": "Leave a Comment"},
+    )
+    submit = SubmitField("Submit")
 
 
 class RegisterForm(FlaskForm):
@@ -85,7 +106,7 @@ class LoginForm(FlaskForm):
 
 @app.route("/")
 def home():
-    return flask.render_template("index.html")
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -96,17 +117,17 @@ def login():
         if user:
             if bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
-                return flask.redirect(flask.url_for("movie"))
+                return redirect(url_for("movie"))
     user = Person.query.filter_by(username=form.username.data).first()
 
-    return flask.render_template("login.html", form=form)
+    return render_template("login.html", form=form)
 
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
-    return flask.redirect(flask.url_for("login"))
+    return redirect(url_for("login"))
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -117,12 +138,12 @@ def signup():
         new_user = Person(username=form.username.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        return flask.redirect(flask.url_for("login"))
+        return redirect(url_for("login"))
     user = Person.query.filter_by(username=form.username.data).first()
     if user:
-        flask.flash("This username is taken. Try again")
+        flash("This username is taken. Try again")
 
-    return flask.render_template("signup.html", form=form)
+    return render_template("signup.html", form=form)
 
 
 @app.route("/movie", methods=["GET", "POST"])
@@ -130,13 +151,31 @@ def signup():
 def movie():
     movie_data = get_movie_data_from_TMDB()
     wiki_link = get_wiki_data(movie_data["title"])
-    return flask.render_template(
+
+    rating_form = RatingForm()
+
+    if rating_form.validate_on_submit():
+        rating_info = RatingInfo(
+            user=current_user.username,
+            movieid=movie_data["id"],
+            rating=rating_form.rating.data,
+            comment=rating_form.comment.data,
+        )
+        db.session.add(rating_info)
+        db.session.commit()
+        return redirect(url_for("movie"))
+
+    all_ratings = RatingInfo.query.filter_by(movieid=movie_data["id"]).all()
+
+    return render_template(
         "movie.html",
         title=movie_data["title"],
         genres=movie_data["genres"],
         tagline=movie_data["tagline"],
         image=movie_data["image"],
         wiki_link=wiki_link,
+        ratings=all_ratings,
+        form=rating_form,
     )
 
 
@@ -165,6 +204,7 @@ def get_movie_data_from_TMDB():
 
     genre_string = ", ".join(genres)
     movie_data = {}
+    movie_data["id"] = int(movie_id)
     movie_data["title"] = title
     movie_data["genres"] = genre_string
     movie_data["tagline"] = tagline
